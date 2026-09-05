@@ -297,7 +297,7 @@
     <div class="brand-row">
       <div class="brand">
         <h1>Draft Board</h1>
-        <small>Top 250 · PPR</small>
+        <small>PPR Draft Board</small>
       </div>
       <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
         <div class="progress-pill">
@@ -335,7 +335,7 @@
     </div>
   </div>
   <ul id="list"></ul>
-  <div class="empty-state" id="emptyState" style="display:none;">No players match your search.</div>
+  <div class="empty-state" id="emptyState" style="display:none;"></div>
 </main>
 
 <div class="bottom-bar">
@@ -361,108 +361,8 @@
 
   var POSITIONS = ["QB","RB","WR","TE","K","DEF","FLEX"];
 
-  // [name, position, team] — a standard-format PPR starting point.
-  // Rosters, rookies and depth charts shift constantly: tap any name,
-  // team or position on the board itself to fix or replace an entry.
-  var SEED = [
-["Christian McCaffrey","RB","SF"],["Bijan Robinson","RB","ATL"],["CeeDee Lamb","WR","DAL"],
-["Tyreek Hill","WR","MIA"],["Ja'Marr Chase","WR","CIN"],["Breece Hall","RB","NYJ"],
-["Amon-Ra St. Brown","WR","DET"],["Justin Jefferson","WR","MIN"],["Jonathan Taylor","RB","IND"],
-["A.J. Brown","WR","NE"],["Saquon Barkley","RB","PHI"],["Puka Nacua","WR","LAR"],["Jaxon Smith-Njigba","WR","SEA"],
-["De'Von Achane","RB","MIA"],["Garrett Wilson","WR","NYJ"],["Jahmyr Gibbs","RB","DET"],
-["Josh Allen","QB","BUF"],["Chris Olave","WR","NO"],["Derrick Henry","RB","BAL"],
-["Davante Adams","WR","NYJ"],["MarShawn Lloyd (GB starter)","RB","GB"],["Stefon Diggs","WR","HOU"],
-["Lamar Jackson","QB","BAL"],["DK Metcalf","WR","SEA"],["Kyren Williams","RB","LAR"],
-["Mike Evans","WR","TB"],["Isiah Pacheco","RB","KC"],["Amari Cooper","WR","BUF"],
-["Jalen Hurts","QB","PHI"],["James Cook","RB","BUF"],["DeVonta Smith","WR","PHI"],
-["Rachaad White","RB","TB"],["Marvin Harrison Jr.","WR","ARI"],["Joe Mixon","RB","HOU"],
-["Malik Nabers","WR","NYG"],["Patrick Mahomes (ACL/LCL recovery, cleared Wk1)","QB","KC"],["Aaron Jones","RB","MIN"],
-["Brian Thomas Jr.","WR","JAX"],["Alvin Kamara","RB","NO"],["Nico Collins","WR","HOU"],
-["Sam LaPorta","TE","DET"],["Kenneth Walker III","RB","SEA"],["Drake London","WR","ATL"],["Tyler Warren","TE","IND"],
-["Joe Burrow","QB","CIN"],["Travis Etienne","RB","JAX"],["Jaylen Waddle","WR","DEN"],
-["Travis Kelce","TE","KC"],["Tony Pollard","RB","TEN"],["Michael Pittman Jr.","WR","IND"],
-["C.J. Stroud","QB","HOU"],["Najee Harris","RB","PIT"],["Calvin Ridley","WR","TEN"],
-["Trey McBride","TE","ARI"],["D'Andre Swift","RB","CHI"],["Terry McLaurin","WR","WAS"],
-["Jayden Daniels","QB","WAS"],["Rhamondre Stevenson","RB","NE"],["Tee Higgins","WR","CIN"],
-["Mark Andrews","TE","BAL"],["Javonte Williams","RB","DAL"],["George Pickens","WR","PIT"],
-["Justin Herbert","QB","LAC"],["Brian Robinson Jr.","RB","WAS"],["Jordan Addison","WR","MIN"],
-["George Kittle","TE","SF"],["James Conner","RB","ARI"],["Rome Odunze","WR","CHI"],
-["Jordan Love","QB","GB"],["Austin Ekeler","RB","WAS"],["Zay Flowers","WR","BAL"],
-["Brock Bowers","TE","LV"],["Raheem Mostert","RB","LV"],["Jameson Williams","WR","DET"],
-["Kyler Murray","QB","MIN"],["Chuba Hubbard","RB","CAR"],["Courtland Sutton","WR","DEN"],
-["Evan Engram","TE","DEN"],["Zamir White","RB","LV"],["Christian Kirk","WR","JAX"],
-["Baker Mayfield","QB","TB"],["Jerome Ford","RB","CLE"],["Diontae Johnson","WR","CAR"],
-["Dallas Goedert","TE","PHI"],["Bucky Irving","RB","TB"],["Keenan Allen","WR","CHI"],
-["Brock Purdy","QB","SF"],["Jaylen Warren","RB","PIT"],["Xavier Worthy","WR","KC"],
-["Kyle Pitts","TE","ATL"],["Tyjae Spears","RB","TEN"],["Ladd McConkey","WR","LAC"],
-["Trevor Lawrence","QB","JAX"],["Ray Davis","RB","BUF"],["Brandon Aiyuk","WR","SF"],
-["David Njoku","TE","CLE"],["Tyler Allgeier","RB","ATL"],["Jerry Jeudy","WR","CLE"],
-["Dak Prescott","QB","DAL"],["Roschon Johnson","RB","CHI"],["Adam Thielen","WR","CAR"],
-["Jake Ferguson","TE","DAL"],["Gus Edwards","RB","LAC"],["DJ Moore","WR","BUF"],
-["Caleb Williams","QB","CHI"],["Justice Hill","RB","BAL"],["Cooper Kupp","WR","LAR"],
-["Cole Kmet","TE","CHI"],["D'Onta Foreman","RB","CLE"],["Rashid Shaheed","WR","NO"],
-["Anthony Richardson","QB","IND"],["Ezekiel Elliott","RB","DAL"],["Tank Dell","WR","HOU"],
-["Dalton Kincaid","TE","BUF"],["Cam Akers","RB","MIN"],["Josh Downs","WR","IND"],
-["Bo Nix","QB","DEN"],["Miles Sanders","RB","CAR"],["Curtis Samuel","WR","BUF"],
-["Pat Freiermuth","TE","PIT"],["Antonio Gibson","RB","NE"],["Rashee Rice","WR","KC"],
-["Tua Tagovailoa","QB","ATL"],["Samaje Perine","RB","KC"],["Jakobi Meyers","WR","JAX"],
-["Tucker Kraft (back from ACL tear)","TE","GB"],["Alexander Mattison","RB","LV"],["Darnell Mooney","WR","ATL"],
-["Matthew Stafford","QB","LAR"],["Jaleel McLaughlin","RB","DEN"],["Jauan Jennings","WR","SF"],
-["Isaiah Likely","TE","BAL"],["Khalil Herbert","RB","CIN"],["Khalil Shakir","WR","BUF"],
-["Geno Smith","QB","NYJ"],["Dameon Pierce","RB","HOU"],["Wan'Dale Robinson","WR","NYG"],
-["Hunter Henry","TE","NE"],["Chase Brown","RB","CIN"],["Romeo Doubs","WR","GB"],
-["Jared Goff","QB","DET"],["Blake Corum","RB","LAR"],["Elijah Moore","WR","CLE"],
-["Noah Fant","TE","SEA"],["Trey Benson","RB","ARI"],["Marquise Brown","WR","KC"],
-["Sam Darnold","QB","SEA"],["Josh Jacobs (exempt list)","RB","GB"],["Gabe Davis","WR","JAX"],
-["Cade Otton","TE","TB"],["Braelon Allen","RB","NYJ"],["Tyler Lockett","WR","SEA"],
-["Aaron Rodgers","QB","PIT"],["Jonathon Brooks","RB","CAR"],["Tutu Atwell","WR","LAR"],
-["Luke Musgrave","TE","GB"],["Ty Chandler","RB","MIN"],["Demario Douglas","WR","NE"],
-["Justin Fields (KC, backup)","QB","KC"],["AJ Dillon","RB","GB"],["Nelson Agholor","WR","BAL"],
-["Zach Ertz","TE","WAS"],["Kareem Hunt","RB","KC"],["Michael Wilson","WR","ARI"],
-["Will Levis","QB","TEN"],["Devin Singletary","RB","NYG"],["Quentin Johnston","WR","LAC"],
-["Chigoziem Okonkwo","TE","TEN"],["Clyde Edwards-Helaire","RB","KC"],["Rondale Moore","WR","ATL"],
-["Kirk Cousins","QB","LV"],["Elijah Mitchell","RB","SF"],["Jalen Tolbert","WR","DAL"],
-["Tyler Conklin","TE","NYJ"],["Tank Bigsby","RB","JAX"],["Dontayvion Wicks","WR","GB"],
-["Gardner Minshew","QB","LV"],["Emari Demercado","RB","ARI"],["Ricky Pearsall","WR","SF"],
-["Juwan Johnson","TE","NO"],["Zack Moss","RB","CIN"],["Xavier Legette","WR","CAR"],
-["Tyler Shough","QB","NO"],["Kimani Vidal","RB","LAC"],["Keon Coleman","WR","BUF"],
-["Gerald Everett","TE","CHI"],["Isaac Guerendo","RB","SF"],["Jayden Reed","WR","GB"],
-["Dylan Laube","RB","LV"],["Christian Watson","WR","GB"],["Theo Johnson","TE","NYG"],
-["Sean Tucker","RB","TB"],["Josh Reynolds","WR","DEN"],["Ben Sinnott","TE","WAS"],
-["Julius Chestnut","RB","TEN"],["Deebo Samuel","WR","WAS"],["Brenton Strange","TE","JAX"],
-["Kendre Miller","RB","NO"],["Jordan Whittington","WR","LAR"],["Jeremiyah Love (ankle recovery)","RB","ARI"],
-["Israel Abanikanda","RB","NYJ"],["Alec Pierce","WR","IND"],
-["Jaylen Wright","RB","MIA"],["Skyy Moore","WR","KC"],
-["Rasheen Ali","RB","BAL"],["Kalif Raymond","WR","DET"],
-["Audric Estime","RB","DEN"],["Tim Patrick","WR","DET"],
-["Kenneth Gainwell","RB","PHI"],["Marvin Mims Jr.","WR","DEN"],
-["Andrei Iosivas","WR","CIN"],["Jalen Coker","WR","CAR"],
-["Ricky White","WR","LV"],["Malachi Corley","WR","NYJ"],
-["Devaughn Vele","WR","DEN"],["Kendrick Bourne","WR","NE"],
-["Parker Washington","WR","JAX"],
-["Justin Tucker","K","BAL"],["Harrison Butker","K","KC"],["Brandon Aubrey","K","DAL"],
-["Jake Moody","K","SF"],["Jason Sanders","K","MIA"],["Tyler Bass","K","BUF"],
-["Chris Boswell","K","PIT"],["Younghoe Koo","K","ATL"],["Cameron Dicker","K","LAC"],
-["Jake Elliott","K","PHI"],["Evan McPherson","K","CIN"],["Dustin Hopkins","K","CLE"],
-["Ka'imi Fairbairn","K","HOU"],["Matt Gay","K","IND"],["Wil Lutz","K","DEN"],
-["Daniel Carlson","K","LV"],
-["San Francisco","DEF","SF"],["Dallas","DEF","DAL"],["Baltimore","DEF","BAL"],
-["Cleveland","DEF","CLE"],["New York","DEF","NYJ"],["Buffalo","DEF","BUF"],
-["Pittsburgh","DEF","PIT"],["Miami","DEF","MIA"],["Philadelphia","DEF","PHI"],
-["Kansas City","DEF","KC"],["New Orleans","DEF","NO"],["Houston","DEF","HOU"],
-["Detroit","DEF","DET"],["Los Angeles","DEF","LAC"],["Indianapolis","DEF","IND"],
-["Green Bay","DEF","GB"]
-  ];
-
   function buildDefaultPlayers(){
-    var players = SEED.map(function(row, i){
-      return { id:"p"+(i+1), name:row[0], pos:row[1], team:row[2], drafted:false };
-    });
-    var n = players.length;
-    for (var i = n; i < 250; i++){
-      players.push({ id:"p"+(i+1), name:"", pos:"FLEX", team:"", drafted:false });
-    }
-    return players;
+    return [];
   }
 
   var state = { players: buildDefaultPlayers() };
@@ -701,7 +601,14 @@
   function renderList(){
     listEl.innerHTML = "";
     var visible = state.players.filter(matches);
-    emptyState.style.display = visible.length ? "none" : "block";
+    if (!visible.length){
+      emptyState.textContent = state.players.length
+        ? "No players match your search."
+        : "Your board is empty — paste a list above, or add players one at a time below.";
+      emptyState.style.display = "block";
+    } else {
+      emptyState.style.display = "none";
+    }
     filterNote.classList.toggle("show", filteringActive() && visible.length > 0);
     visible.forEach(function(p){ listEl.appendChild(buildRow(p)); });
     toggleSortable();
@@ -711,6 +618,10 @@
     renderChips();
     renderList();
     updateProgress();
+    if (!state.players.length && importPanel && importPanel.style.display === "none"){
+      importPanel.style.display = "block";
+      if (importText) importText.focus();
+    }
   }
 
   function toggleSortable(){
@@ -792,7 +703,7 @@
   });
 
   document.getElementById("resetBtn").addEventListener("click", function(){
-    if (!confirm("Reset the board? This restores the original top-250 order and clears every edit and check.")) return;
+    if (!confirm("Reset the board? This clears every player, edit and check back to a blank board.")) return;
     state.players = buildDefaultPlayers();
     activeFilter = "ALL";
     searchEl.value = "";
