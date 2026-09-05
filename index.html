@@ -273,6 +273,27 @@
     .sync-dot.saving{animation:none;}
     .toast{transition:none;}
   }
+
+  .import-panel{
+    background:var(--surface); border:1px solid var(--border); border-radius:12px;
+    padding:14px; margin-bottom:14px; box-shadow:var(--shadow);
+  }
+  .import-panel h2{
+    font-family:"Teko",sans-serif; font-size:20px; font-weight:600; margin:0 0 6px;
+    text-transform:uppercase; letter-spacing:.02em; color:var(--turf-dark);
+  }
+  .import-panel p{font-size:12.5px; color:var(--ink-dim); margin:0 0 10px; line-height:1.4;}
+  .import-panel textarea{
+    width:100%; min-height:120px; border-radius:8px; border:1px solid var(--border);
+    background:var(--surface-2); color:var(--ink); font-family:inherit; font-size:13px;
+    padding:10px; resize:vertical;
+  }
+  .import-panel textarea:focus{outline:2px solid var(--turf); outline-offset:1px;}
+  .import-check{
+    display:flex; align-items:flex-start; gap:8px; margin-top:10px; font-size:12.5px; color:var(--ink-dim);
+  }
+  .import-check input{margin-top:2px; accent-color:var(--turf);}
+  .import-actions{display:flex; gap:8px; margin-top:10px;}
 </style>
 
 <div class="topbar">
@@ -304,6 +325,19 @@
 </div>
 
 <main>
+  <div class="import-panel" id="importPanel" style="display:none;">
+    <h2>Paste a list</h2>
+    <p>Grab a current ranking from any site — one player per line, in order. Handles formats like "1. Ja'Marr Chase, CIN – WR1". Position and team are best-effort; fix anything wrong right on the board after importing.</p>
+    <textarea id="importText" placeholder="1. Ja'Marr Chase, CIN - WR1&#10;2. Bijan Robinson, ATL - RB1&#10;3. ..."></textarea>
+    <label class="import-check">
+      <input type="checkbox" id="replaceBoardCheckbox">
+      <span>Replace the whole board instead of adding to the bottom — checked-off players keep their check if the name matches.</span>
+    </label>
+    <div class="import-actions">
+      <button class="btn primary" id="importConfirmBtn" type="button">Import list</button>
+      <button class="btn ghost" id="importCancelBtn" type="button">Cancel</button>
+    </div>
+  </div>
   <ul id="list"></ul>
   <div class="empty-state" id="emptyState" style="display:none;">No players match your search.</div>
 </main>
@@ -314,6 +348,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
       Add player
     </button>
+    <button class="btn" id="importToggleBtn">Paste a list</button>
     <button class="btn" id="clearChecksBtn">Clear all checks</button>
     <button class="btn ghost" id="resetBtn">Reset board</button>
   </div>
@@ -337,18 +372,18 @@
 ["Christian McCaffrey","RB","SF"],["Bijan Robinson","RB","ATL"],["CeeDee Lamb","WR","DAL"],
 ["Tyreek Hill","WR","MIA"],["Ja'Marr Chase","WR","CIN"],["Breece Hall","RB","NYJ"],
 ["Amon-Ra St. Brown","WR","DET"],["Justin Jefferson","WR","MIN"],["Jonathan Taylor","RB","IND"],
-["A.J. Brown","WR","PHI"],["Saquon Barkley","RB","PHI"],["Puka Nacua","WR","LAR"],
+["A.J. Brown","WR","NE"],["Saquon Barkley","RB","PHI"],["Puka Nacua","WR","LAR"],
 ["De'Von Achane","RB","MIA"],["Garrett Wilson","WR","NYJ"],["Jahmyr Gibbs","RB","DET"],
 ["Josh Allen","QB","BUF"],["Chris Olave","WR","NO"],["Derrick Henry","RB","BAL"],
-["Davante Adams","WR","NYJ"],["Josh Jacobs","RB","GB"],["Stefon Diggs","WR","HOU"],
+["Davante Adams","WR","NYJ"],["MarShawn Lloyd (GB starter)","RB","GB"],["Stefon Diggs","WR","HOU"],
 ["Lamar Jackson","QB","BAL"],["DK Metcalf","WR","SEA"],["Kyren Williams","RB","LAR"],
 ["Mike Evans","WR","TB"],["Isiah Pacheco","RB","KC"],["Amari Cooper","WR","BUF"],
 ["Jalen Hurts","QB","PHI"],["James Cook","RB","BUF"],["DeVonta Smith","WR","PHI"],
 ["Rachaad White","RB","TB"],["Marvin Harrison Jr.","WR","ARI"],["Joe Mixon","RB","HOU"],
-["Malik Nabers","WR","NYG"],["Patrick Mahomes","QB","KC"],["Aaron Jones","RB","MIN"],
+["Malik Nabers","WR","NYG"],["Patrick Mahomes (knee recovery)","QB","KC"],["Aaron Jones","RB","MIN"],
 ["Brian Thomas Jr.","WR","JAX"],["Alvin Kamara","RB","NO"],["Nico Collins","WR","HOU"],
 ["Sam LaPorta","TE","DET"],["Kenneth Walker III","RB","SEA"],["Drake London","WR","ATL"],
-["Joe Burrow","QB","CIN"],["Travis Etienne","RB","JAX"],["Jaylen Waddle","WR","MIA"],
+["Joe Burrow","QB","CIN"],["Travis Etienne","RB","JAX"],["Jaylen Waddle","WR","DEN"],
 ["Travis Kelce","TE","KC"],["Tony Pollard","RB","TEN"],["Michael Pittman Jr.","WR","IND"],
 ["C.J. Stroud","QB","HOU"],["Najee Harris","RB","PIT"],["Calvin Ridley","WR","TEN"],
 ["Trey McBride","TE","ARI"],["D'Andre Swift","RB","CHI"],["Terry McLaurin","WR","WAS"],
@@ -367,7 +402,7 @@
 ["Trevor Lawrence","QB","JAX"],["Ray Davis","RB","BUF"],["Brandon Aiyuk","WR","SF"],
 ["David Njoku","TE","CLE"],["Tyler Allgeier","RB","ATL"],["Jerry Jeudy","WR","CLE"],
 ["Dak Prescott","QB","DAL"],["Roschon Johnson","RB","CHI"],["Adam Thielen","WR","CAR"],
-["Jake Ferguson","TE","DAL"],["Gus Edwards","RB","LAC"],["DJ Moore","WR","CHI"],
+["Jake Ferguson","TE","DAL"],["Gus Edwards","RB","LAC"],["DJ Moore","WR","BUF"],
 ["Caleb Williams","QB","CHI"],["Justice Hill","RB","BAL"],["Cooper Kupp","WR","LAR"],
 ["Cole Kmet","TE","CHI"],["D'Onta Foreman","RB","CLE"],["Rashid Shaheed","WR","NO"],
 ["Anthony Richardson","QB","IND"],["Ezekiel Elliott","RB","DAL"],["Tank Dell","WR","HOU"],
@@ -375,18 +410,18 @@
 ["Bo Nix","QB","DEN"],["Miles Sanders","RB","CAR"],["Curtis Samuel","WR","BUF"],
 ["Pat Freiermuth","TE","PIT"],["Antonio Gibson","RB","NE"],["Rashee Rice","WR","KC"],
 ["Tua Tagovailoa","QB","MIA"],["Samaje Perine","RB","KC"],["Jakobi Meyers","WR","LV"],
-["Tucker Kraft","TE","GB"],["Alexander Mattison","RB","LV"],["Darnell Mooney","WR","ATL"],
+["Tucker Kraft (ACL recovery)","TE","GB"],["Alexander Mattison","RB","LV"],["Darnell Mooney","WR","ATL"],
 ["Matthew Stafford","QB","LAR"],["Jaleel McLaughlin","RB","DEN"],["Jauan Jennings","WR","SF"],
 ["Isaiah Likely","TE","BAL"],["Khalil Herbert","RB","CIN"],["Khalil Shakir","WR","BUF"],
 ["Geno Smith","QB","SEA"],["Dameon Pierce","RB","HOU"],["Wan'Dale Robinson","WR","NYG"],
 ["Hunter Henry","TE","NE"],["Chase Brown","RB","CIN"],["Romeo Doubs","WR","GB"],
 ["Jared Goff","QB","DET"],["Blake Corum","RB","LAR"],["Elijah Moore","WR","CLE"],
 ["Noah Fant","TE","SEA"],["Trey Benson","RB","ARI"],["Marquise Brown","WR","KC"],
-["Sam Darnold","QB","MIN"],["MarShawn Lloyd","RB","GB"],["Gabe Davis","WR","JAX"],
+["Sam Darnold","QB","MIN"],["Josh Jacobs (exempt list)","RB","GB"],["Gabe Davis","WR","JAX"],
 ["Cade Otton","TE","TB"],["Braelon Allen","RB","NYJ"],["Tyler Lockett","WR","SEA"],
 ["Aaron Rodgers","QB","PIT"],["Jonathon Brooks","RB","CAR"],["Tutu Atwell","WR","LAR"],
 ["Luke Musgrave","TE","GB"],["Ty Chandler","RB","MIN"],["Demario Douglas","WR","NE"],
-["Justin Fields","QB","NYJ"],["AJ Dillon","RB","GB"],["Nelson Agholor","WR","BAL"],
+["Justin Fields (KC, backup)","QB","KC"],["AJ Dillon","RB","GB"],["Nelson Agholor","WR","BAL"],
 ["Zach Ertz","TE","WAS"],["Kareem Hunt","RB","KC"],["Michael Wilson","WR","ARI"],
 ["Will Levis","QB","TEN"],["Devin Singletary","RB","NYG"],["Quentin Johnston","WR","LAC"],
 ["Chigoziem Okonkwo","TE","TEN"],["Clyde Edwards-Helaire","RB","KC"],["Rondale Moore","WR","ATL"],
@@ -737,6 +772,7 @@
   function showToast(message, onUndo){
     toastMsg.textContent = message;
     toastEl.classList.add("show");
+    toastUndo.style.display = onUndo ? "" : "none";
     clearTimeout(toastTimer);
     toastUndo.onclick = function(){
       toastEl.classList.remove("show");
@@ -784,6 +820,85 @@
   searchEl.addEventListener("input", function(){
     searchTerm = searchEl.value.trim();
     renderList();
+  });
+
+  var importPanel = document.getElementById("importPanel");
+  var importText = document.getElementById("importText");
+  var replaceBoardCheckbox = document.getElementById("replaceBoardCheckbox");
+
+  document.getElementById("importToggleBtn").addEventListener("click", function(){
+    importPanel.style.display = importPanel.style.display === "none" ? "block" : "none";
+    if (importPanel.style.display === "block") importText.focus();
+  });
+  document.getElementById("importCancelBtn").addEventListener("click", function(){
+    importPanel.style.display = "none";
+    importText.value = "";
+    replaceBoardCheckbox.checked = false;
+  });
+
+  function parseImportLine(line){
+    var cleaned = line.replace(/^\s*\d+[\.\)]\s*/, "").trim();
+    if (!cleaned) return null;
+
+    var drafted = false;
+    if (/\[(DRAFTED|TAKEN)\]\s*$/i.test(cleaned)){
+      drafted = true;
+      cleaned = cleaned.replace(/\[(DRAFTED|TAKEN)\]\s*$/i, "").trim();
+    }
+
+    var pos = "FLEX";
+    var posMatch = cleaned.match(/\b(QB|RB|WR|TE|K|DST|DEF|D\/ST)\s?-?\s?#?\d{0,2}\b/i);
+    if (posMatch){
+      pos = posMatch[1].toUpperCase().replace("D/ST", "DEF").replace("DST", "DEF");
+    }
+
+    var team = "";
+    var upperTokens = cleaned.match(/\b[A-Z]{2,3}\b/g) || [];
+    for (var i = upperTokens.length - 1; i >= 0; i--){
+      var t = upperTokens[i];
+      if (t === "PPR" || t === "ADP") continue;
+      if (posMatch && t === posMatch[1].toUpperCase()) continue;
+      if (POSITIONS.indexOf(t) !== -1) continue;
+      team = t;
+      break;
+    }
+
+    var name = cleaned.split(/,| -- | – |—| - /)[0].trim();
+    if (!name) name = cleaned;
+    if (!name) return null;
+
+    return { id: freshId(), name: name, pos: pos, team: team, drafted: drafted };
+  }
+
+  document.getElementById("importConfirmBtn").addEventListener("click", function(){
+    var lines = importText.value.split("\n").map(function(l){ return l.trim(); }).filter(Boolean);
+    var parsed = lines.map(parseImportLine).filter(Boolean);
+    if (!parsed.length) return;
+
+    if (replaceBoardCheckbox.checked){
+      var draftedByName = {};
+      state.players.forEach(function(p){
+        if (p.drafted && p.name) draftedByName[p.name.trim().toLowerCase()] = true;
+      });
+      parsed.forEach(function(p){
+        if (draftedByName[p.name.trim().toLowerCase()]) p.drafted = true;
+      });
+      state.players = parsed;
+    } else {
+      state.players = state.players.concat(parsed);
+    }
+
+    importPanel.style.display = "none";
+    importText.value = "";
+    replaceBoardCheckbox.checked = false;
+    activeFilter = "ALL";
+    searchEl.value = "";
+    searchTerm = "";
+    renderChips();
+    renderList();
+    updateProgress();
+    debouncedRemoteSave();
+    showToast(parsed.length + " player" + (parsed.length === 1 ? "" : "s") + " imported", null);
   });
 
   var cached = localLoad();
