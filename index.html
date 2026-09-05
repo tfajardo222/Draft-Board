@@ -1,0 +1,795 @@
+<title>Draft Board</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;600;700&family=Archivo:ital,wght@0,400;0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+<style>
+  :root{
+    --bg:#f2f5ec;
+    --surface:#ffffff;
+    --surface-2:#e9efe0;
+    --border:#d7ddc9;
+    --ink:#15231a;
+    --ink-dim:#5c6b57;
+    --turf:#1f6b3f;
+    --turf-dark:#154f2f;
+    --turf-ink:#ffffff;
+    --hud:#c97a12;
+    --danger:#b5433a;
+    --danger-ink:#ffffff;
+    --chip-bg:#ffffff;
+    --shadow: 0 1px 2px rgba(20,30,20,.06), 0 1px 1px rgba(20,30,20,.04);
+
+    --pos-qb:#c23b45; --pos-qb-ink:#fff;
+    --pos-rb:#1f66c9; --pos-rb-ink:#fff;
+    --pos-wr:#6a3fc2; --pos-wr-ink:#fff;
+    --pos-te:#b5760f; --pos-te-ink:#fff;
+    --pos-k:#5a695f;  --pos-k-ink:#fff;
+    --pos-def:#2c4a66; --pos-def-ink:#fff;
+    --pos-flex:#7a8577; --pos-flex-ink:#fff;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0b120c;
+      --surface:#121b14;
+      --surface-2:#182518;
+      --border:#26361f;
+      --ink:#e9f0e2;
+      --ink-dim:#93a389;
+      --turf:#49ab6c;
+      --turf-dark:#3a9159;
+      --turf-ink:#0a1a0f;
+      --hud:#e6a13a;
+      --danger:#e2685c;
+      --danger-ink:#2a0d0a;
+      --chip-bg:#182518;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 2px 8px rgba(0,0,0,.3);
+
+      --pos-qb:#ef6b73; --pos-qb-ink:#2a0d0e;
+      --pos-rb:#5f9de8; --pos-rb-ink:#08182c;
+      --pos-wr:#a682e8; --pos-wr-ink:#160c2c;
+      --pos-te:#e0a94f; --pos-te-ink:#2a1a02;
+      --pos-k:#9db0a2;  --pos-k-ink:#0e1712;
+      --pos-def:#7fa3c2; --pos-def-ink:#08141c;
+      --pos-flex:#9aa896; --pos-flex-ink:#131a12;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0b120c;
+    --surface:#121b14;
+    --surface-2:#182518;
+    --border:#26361f;
+    --ink:#e9f0e2;
+    --ink-dim:#93a389;
+    --turf:#49ab6c;
+    --turf-dark:#3a9159;
+    --turf-ink:#0a1a0f;
+    --hud:#e6a13a;
+    --danger:#e2685c;
+    --danger-ink:#2a0d0a;
+    --chip-bg:#182518;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 2px 8px rgba(0,0,0,.3);
+
+    --pos-qb:#ef6b73; --pos-qb-ink:#2a0d0e;
+    --pos-rb:#5f9de8; --pos-rb-ink:#08182c;
+    --pos-wr:#a682e8; --pos-wr-ink:#160c2c;
+    --pos-te:#e0a94f; --pos-te-ink:#2a1a02;
+    --pos-k:#9db0a2;  --pos-k-ink:#0e1712;
+    --pos-def:#7fa3c2; --pos-def-ink:#08141c;
+    --pos-flex:#9aa896; --pos-flex-ink:#131a12;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Archivo",system-ui,sans-serif;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .display{font-family:"Teko",system-ui,sans-serif; font-weight:600; letter-spacing:.01em;}
+
+  a{color:inherit;}
+
+  .topbar{
+    position:sticky; top:0; z-index:20;
+    background:var(--bg);
+    border-bottom:1px solid var(--border);
+    padding:14px 16px 12px;
+  }
+  .topbar-inner{max-width:760px; margin:0 auto;}
+  .brand-row{
+    display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap;
+  }
+  .brand{
+    display:flex; align-items:baseline; gap:10px;
+  }
+  .brand h1{
+    font-family:"Teko",system-ui,sans-serif;
+    font-size:34px; line-height:1; font-weight:700;
+    margin:0; letter-spacing:.02em; text-transform:uppercase;
+    color:var(--turf-dark);
+  }
+  :root[data-theme="dark"] .brand h1, @media (prefers-color-scheme:dark){ }
+  .brand small{
+    font-size:12px; color:var(--ink-dim); text-transform:uppercase; letter-spacing:.08em; font-weight:600;
+  }
+  .progress-pill{
+    display:flex; align-items:center; gap:8px;
+    background:var(--surface); border:1px solid var(--border); border-radius:999px;
+    padding:5px 12px 5px 6px; box-shadow:var(--shadow);
+    font-size:13px; font-weight:600; white-space:nowrap;
+  }
+  .progress-ring{
+    width:26px; height:26px; border-radius:50%;
+    background:
+      conic-gradient(var(--turf) calc(var(--pct,0) * 1%), var(--surface-2) 0);
+    display:flex; align-items:center; justify-content:center; flex:none;
+  }
+  .progress-ring::after{
+    content:""; width:18px; height:18px; border-radius:50%; background:var(--surface);
+  }
+  .sync-status{font-size:11px; color:var(--ink-dim); display:flex; align-items:center; gap:5px;}
+  .sync-dot{width:6px; height:6px; border-radius:50%; background:var(--ink-dim); flex:none;}
+  .sync-dot.synced{background:var(--turf);}
+  .sync-dot.saving{background:var(--hud); animation:pulse 1s ease-in-out infinite;}
+  .sync-dot.offline{background:var(--danger);}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+
+  .controls-row{
+    display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; align-items:center;
+  }
+  .search-wrap{position:relative; flex:1; min-width:160px;}
+  .search-wrap input{
+    width:100%; padding:9px 12px 9px 32px; border-radius:10px; border:1px solid var(--border);
+    background:var(--surface); color:var(--ink); font-family:inherit; font-size:14px;
+  }
+  .search-wrap input:focus{outline:2px solid var(--turf); outline-offset:1px;}
+  .search-wrap svg{position:absolute; left:10px; top:50%; transform:translateY(-50%); opacity:.5; width:15px; height:15px;}
+
+  .filter-chips{display:flex; gap:6px; overflow-x:auto; padding-bottom:2px; -ms-overflow-style:none; scrollbar-width:none;}
+  .filter-chips::-webkit-scrollbar{display:none;}
+  .chip{
+    flex:none; border:1px solid var(--border); background:var(--chip-bg); color:var(--ink-dim);
+    padding:7px 13px; border-radius:999px; font-size:12.5px; font-weight:700; letter-spacing:.03em;
+    cursor:pointer; text-transform:uppercase; font-family:"Archivo",sans-serif;
+  }
+  .chip.active{background:var(--turf); border-color:var(--turf); color:var(--turf-ink);}
+
+  .filter-note{
+    max-width:760px; margin:8px auto 0; font-size:12px; color:var(--ink-dim); text-align:center;
+    display:none;
+  }
+  .filter-note.show{display:block;}
+
+  main{max-width:760px; margin:0 auto; padding:14px 16px 120px;}
+
+  #list{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:7px;}
+
+  .row{
+    display:flex; align-items:center; gap:10px;
+    background:var(--surface); border:1px solid var(--border); border-radius:12px;
+    padding:9px 10px; box-shadow:var(--shadow);
+  }
+  .row.drafted{opacity:.5;}
+  .row.drafted .p-name{text-decoration:line-through; text-decoration-thickness:1.5px;}
+  .row.sortable-ghost{opacity:.3;}
+  .row.sortable-chosen{box-shadow:0 4px 14px rgba(0,0,0,.18);}
+
+  .handle{
+    flex:none; width:20px; height:32px; display:flex; align-items:center; justify-content:center;
+    color:var(--ink-dim); cursor:grab; touch-action:none;
+  }
+  .handle svg{width:14px; height:20px;}
+  .row.drag-disabled .handle{opacity:.25; cursor:not-allowed;}
+
+  .rank{
+    flex:none; width:34px; text-align:center;
+    font-family:"Teko",sans-serif; font-size:24px; font-weight:600; color:var(--ink-dim);
+    font-variant-numeric:tabular-nums;
+  }
+
+  .pos-pill{
+    flex:none; width:38px; text-align:center; padding:3px 0; border-radius:6px;
+    font-size:11px; font-weight:700; letter-spacing:.02em;
+    font-family:"Archivo",sans-serif; text-transform:uppercase;
+    background:var(--surface-2); color:var(--ink);
+    border:none; appearance:none; -webkit-appearance:none;
+    cursor:pointer;
+  }
+  .pos-pill.qb{background:var(--pos-qb); color:var(--pos-qb-ink);}
+  .pos-pill.rb{background:var(--pos-rb); color:var(--pos-rb-ink);}
+  .pos-pill.wr{background:var(--pos-wr); color:var(--pos-wr-ink);}
+  .pos-pill.te{background:var(--pos-te); color:var(--pos-te-ink);}
+  .pos-pill.k{background:var(--pos-k); color:var(--pos-k-ink);}
+  .pos-pill.def{background:var(--pos-def); color:var(--pos-def-ink);}
+  .pos-pill.flex{background:var(--pos-flex); color:var(--pos-flex-ink);}
+
+  .info{flex:1; min-width:0; display:flex; flex-direction:column; gap:1px;}
+  .p-name{
+    font-size:15px; font-weight:600; color:var(--ink);
+    outline:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    border-radius:4px; padding:1px 3px; margin:0 -3px;
+  }
+  .p-name:focus{background:var(--surface-2); text-overflow:clip; white-space:normal;}
+  .p-name:empty::before{content:"Tap to name this player"; color:var(--ink-dim); font-weight:500; font-style:italic;}
+  .p-team{
+    font-size:11.5px; color:var(--ink-dim); font-weight:600; text-transform:uppercase; letter-spacing:.03em;
+    outline:none; border-radius:4px; padding:1px 3px; margin:0 -3px; width:fit-content;
+  }
+  .p-team:focus{background:var(--surface-2);}
+  .p-team:empty::before{content:"team"; opacity:.6;}
+
+  .check-btn{
+    flex:none; width:30px; height:30px; border-radius:50%; border:2px solid var(--border);
+    background:var(--surface); cursor:pointer; display:flex; align-items:center; justify-content:center;
+    padding:0;
+  }
+  .check-btn svg{width:15px; height:15px; opacity:0; stroke:var(--turf-ink);}
+  .check-btn.on{background:var(--turf); border-color:var(--turf);}
+  .check-btn.on svg{opacity:1;}
+
+  .del-btn{
+    flex:none; width:26px; height:26px; border-radius:50%; border:none; background:transparent;
+    color:var(--ink-dim); cursor:pointer; display:flex; align-items:center; justify-content:center;
+    font-size:16px; line-height:1;
+  }
+  .del-btn:hover{background:var(--surface-2); color:var(--danger);}
+
+  .empty-state{
+    text-align:center; padding:40px 20px; color:var(--ink-dim); font-size:14px;
+  }
+
+  .bottom-bar{
+    position:fixed; bottom:0; left:0; right:0; z-index:20;
+    background:var(--surface); border-top:1px solid var(--border);
+    padding:10px 16px calc(10px + env(safe-area-inset-bottom));
+  }
+  .bottom-bar-inner{
+    max-width:760px; margin:0 auto; display:flex; gap:8px; flex-wrap:wrap; justify-content:center;
+  }
+  .btn{
+    font-family:"Archivo",sans-serif; font-size:13px; font-weight:700;
+    border-radius:10px; padding:10px 14px; border:1px solid var(--border);
+    background:var(--surface-2); color:var(--ink); cursor:pointer;
+    display:inline-flex; align-items:center; gap:6px;
+  }
+  .btn.primary{background:var(--turf); border-color:var(--turf); color:var(--turf-ink);}
+  .btn.ghost{background:transparent;}
+  .btn svg{width:14px; height:14px;}
+
+  .toast{
+    position:fixed; left:50%; bottom:78px; transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:var(--bg); padding:10px 16px; border-radius:10px;
+    font-size:13px; font-weight:600; display:flex; align-items:center; gap:12px;
+    opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease;
+    z-index:30; box-shadow:var(--shadow);
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0); pointer-events:auto;}
+  .toast button{background:none; border:none; color:var(--hud); font-weight:700; cursor:pointer; font-family:inherit; font-size:13px;}
+
+  @media (prefers-reduced-motion: reduce){
+    .sync-dot.saving{animation:none;}
+    .toast{transition:none;}
+  }
+</style>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand-row">
+      <div class="brand">
+        <h1>Draft Board</h1>
+        <small>Top 250 · PPR</small>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
+        <div class="progress-pill">
+          <div class="progress-ring" id="progressRing" style="--pct:0"></div>
+          <span id="progressText">0 / 250 drafted</span>
+        </div>
+        <div class="sync-status"><span class="sync-dot" id="syncDot"></span><span id="syncText">Loading…</span></div>
+      </div>
+    </div>
+    <div class="controls-row">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input id="search" type="text" placeholder="Search players or teams…" autocomplete="off">
+      </div>
+    </div>
+    <div class="controls-row" style="margin-top:8px;">
+      <div class="filter-chips" id="chips"></div>
+    </div>
+  </div>
+  <div class="filter-note" id="filterNote">Clear the search &amp; position filter to drag and reorder players.</div>
+</div>
+
+<main>
+  <ul id="list"></ul>
+  <div class="empty-state" id="emptyState" style="display:none;">No players match your search.</div>
+</main>
+
+<div class="bottom-bar">
+  <div class="bottom-bar-inner">
+    <button class="btn primary" id="addBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      Add player
+    </button>
+    <button class="btn" id="clearChecksBtn">Clear all checks</button>
+    <button class="btn ghost" id="resetBtn">Reset board</button>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <span id="toastMsg"></span>
+  <button id="toastUndo">Undo</button>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var POSITIONS = ["QB","RB","WR","TE","K","DEF","FLEX"];
+
+  // [name, position, team] — a standard-format PPR starting point.
+  // Rosters, rookies and depth charts shift constantly: tap any name,
+  // team or position on the board itself to fix or replace an entry.
+  var SEED = [
+["Christian McCaffrey","RB","SF"],["Bijan Robinson","RB","ATL"],["CeeDee Lamb","WR","DAL"],
+["Tyreek Hill","WR","MIA"],["Ja'Marr Chase","WR","CIN"],["Breece Hall","RB","NYJ"],
+["Amon-Ra St. Brown","WR","DET"],["Justin Jefferson","WR","MIN"],["Jonathan Taylor","RB","IND"],
+["A.J. Brown","WR","PHI"],["Saquon Barkley","RB","PHI"],["Puka Nacua","WR","LAR"],
+["De'Von Achane","RB","MIA"],["Garrett Wilson","WR","NYJ"],["Jahmyr Gibbs","RB","DET"],
+["Josh Allen","QB","BUF"],["Chris Olave","WR","NO"],["Derrick Henry","RB","BAL"],
+["Davante Adams","WR","NYJ"],["Josh Jacobs","RB","GB"],["Stefon Diggs","WR","HOU"],
+["Lamar Jackson","QB","BAL"],["DK Metcalf","WR","SEA"],["Kyren Williams","RB","LAR"],
+["Mike Evans","WR","TB"],["Isiah Pacheco","RB","KC"],["Amari Cooper","WR","BUF"],
+["Jalen Hurts","QB","PHI"],["James Cook","RB","BUF"],["DeVonta Smith","WR","PHI"],
+["Rachaad White","RB","TB"],["Marvin Harrison Jr.","WR","ARI"],["Joe Mixon","RB","HOU"],
+["Malik Nabers","WR","NYG"],["Patrick Mahomes","QB","KC"],["Aaron Jones","RB","MIN"],
+["Brian Thomas Jr.","WR","JAX"],["Alvin Kamara","RB","NO"],["Nico Collins","WR","HOU"],
+["Sam LaPorta","TE","DET"],["Kenneth Walker III","RB","SEA"],["Drake London","WR","ATL"],
+["Joe Burrow","QB","CIN"],["Travis Etienne","RB","JAX"],["Jaylen Waddle","WR","MIA"],
+["Travis Kelce","TE","KC"],["Tony Pollard","RB","TEN"],["Michael Pittman Jr.","WR","IND"],
+["C.J. Stroud","QB","HOU"],["Najee Harris","RB","PIT"],["Calvin Ridley","WR","TEN"],
+["Trey McBride","TE","ARI"],["D'Andre Swift","RB","CHI"],["Terry McLaurin","WR","WAS"],
+["Jayden Daniels","QB","WAS"],["Rhamondre Stevenson","RB","NE"],["Tee Higgins","WR","CIN"],
+["Mark Andrews","TE","BAL"],["Javonte Williams","RB","DAL"],["George Pickens","WR","PIT"],
+["Justin Herbert","QB","LAC"],["Brian Robinson Jr.","RB","WAS"],["Jordan Addison","WR","MIN"],
+["George Kittle","TE","SF"],["James Conner","RB","ARI"],["Rome Odunze","WR","CHI"],
+["Jordan Love","QB","GB"],["Austin Ekeler","RB","WAS"],["Zay Flowers","WR","BAL"],
+["Brock Bowers","TE","LV"],["Raheem Mostert","RB","LV"],["Jameson Williams","WR","DET"],
+["Kyler Murray","QB","ARI"],["Chuba Hubbard","RB","CAR"],["Courtland Sutton","WR","DEN"],
+["Evan Engram","TE","DEN"],["Zamir White","RB","LV"],["Christian Kirk","WR","JAX"],
+["Baker Mayfield","QB","TB"],["Jerome Ford","RB","CLE"],["Diontae Johnson","WR","CAR"],
+["Dallas Goedert","TE","PHI"],["Bucky Irving","RB","TB"],["Keenan Allen","WR","CHI"],
+["Brock Purdy","QB","SF"],["Jaylen Warren","RB","PIT"],["Xavier Worthy","WR","KC"],
+["Kyle Pitts","TE","ATL"],["Tyjae Spears","RB","TEN"],["Ladd McConkey","WR","LAC"],
+["Trevor Lawrence","QB","JAX"],["Ray Davis","RB","BUF"],["Brandon Aiyuk","WR","SF"],
+["David Njoku","TE","CLE"],["Tyler Allgeier","RB","ATL"],["Jerry Jeudy","WR","CLE"],
+["Dak Prescott","QB","DAL"],["Roschon Johnson","RB","CHI"],["Adam Thielen","WR","CAR"],
+["Jake Ferguson","TE","DAL"],["Gus Edwards","RB","LAC"],["DJ Moore","WR","CHI"],
+["Caleb Williams","QB","CHI"],["Justice Hill","RB","BAL"],["Cooper Kupp","WR","LAR"],
+["Cole Kmet","TE","CHI"],["D'Onta Foreman","RB","CLE"],["Rashid Shaheed","WR","NO"],
+["Anthony Richardson","QB","IND"],["Ezekiel Elliott","RB","DAL"],["Tank Dell","WR","HOU"],
+["Dalton Kincaid","TE","BUF"],["Cam Akers","RB","MIN"],["Josh Downs","WR","IND"],
+["Bo Nix","QB","DEN"],["Miles Sanders","RB","CAR"],["Curtis Samuel","WR","BUF"],
+["Pat Freiermuth","TE","PIT"],["Antonio Gibson","RB","NE"],["Rashee Rice","WR","KC"],
+["Tua Tagovailoa","QB","MIA"],["Samaje Perine","RB","KC"],["Jakobi Meyers","WR","LV"],
+["Tucker Kraft","TE","GB"],["Alexander Mattison","RB","LV"],["Darnell Mooney","WR","ATL"],
+["Matthew Stafford","QB","LAR"],["Jaleel McLaughlin","RB","DEN"],["Jauan Jennings","WR","SF"],
+["Isaiah Likely","TE","BAL"],["Khalil Herbert","RB","CIN"],["Khalil Shakir","WR","BUF"],
+["Geno Smith","QB","SEA"],["Dameon Pierce","RB","HOU"],["Wan'Dale Robinson","WR","NYG"],
+["Hunter Henry","TE","NE"],["Chase Brown","RB","CIN"],["Romeo Doubs","WR","GB"],
+["Jared Goff","QB","DET"],["Blake Corum","RB","LAR"],["Elijah Moore","WR","CLE"],
+["Noah Fant","TE","SEA"],["Trey Benson","RB","ARI"],["Marquise Brown","WR","KC"],
+["Sam Darnold","QB","MIN"],["MarShawn Lloyd","RB","GB"],["Gabe Davis","WR","JAX"],
+["Cade Otton","TE","TB"],["Braelon Allen","RB","NYJ"],["Tyler Lockett","WR","SEA"],
+["Aaron Rodgers","QB","PIT"],["Jonathon Brooks","RB","CAR"],["Tutu Atwell","WR","LAR"],
+["Luke Musgrave","TE","GB"],["Ty Chandler","RB","MIN"],["Demario Douglas","WR","NE"],
+["Justin Fields","QB","NYJ"],["AJ Dillon","RB","GB"],["Nelson Agholor","WR","BAL"],
+["Zach Ertz","TE","WAS"],["Kareem Hunt","RB","KC"],["Michael Wilson","WR","ARI"],
+["Will Levis","QB","TEN"],["Devin Singletary","RB","NYG"],["Quentin Johnston","WR","LAC"],
+["Chigoziem Okonkwo","TE","TEN"],["Clyde Edwards-Helaire","RB","KC"],["Rondale Moore","WR","ATL"],
+["Derek Carr","QB","NO"],["Elijah Mitchell","RB","SF"],["Jalen Tolbert","WR","DAL"],
+["Tyler Conklin","TE","NYJ"],["Tank Bigsby","RB","JAX"],["Dontayvion Wicks","WR","GB"],
+["Gardner Minshew","QB","LV"],["Emari Demercado","RB","ARI"],["Ricky Pearsall","WR","SF"],
+["Juwan Johnson","TE","NO"],["Zack Moss","RB","CIN"],["Xavier Legette","WR","CAR"],
+["Russell Wilson","QB","PIT"],["Kimani Vidal","RB","LAC"],["Keon Coleman","WR","BUF"],
+["Gerald Everett","TE","CHI"],["Isaac Guerendo","RB","SF"],["Jayden Reed","WR","GB"],
+["Dylan Laube","RB","LV"],["Christian Watson","WR","GB"],["Theo Johnson","TE","NYG"],
+["Sean Tucker","RB","TB"],["Josh Reynolds","WR","DEN"],["Ben Sinnott","TE","WAS"],
+["Julius Chestnut","RB","TEN"],["Deebo Samuel","WR","WAS"],["Brenton Strange","TE","JAX"],
+["Kendre Miller","RB","NO"],["Jordan Whittington","WR","LAR"],
+["Israel Abanikanda","RB","NYJ"],["Alec Pierce","WR","IND"],
+["Jaylen Wright","RB","MIA"],["Skyy Moore","WR","KC"],
+["Rasheen Ali","RB","BAL"],["Kalif Raymond","WR","DET"],
+["Audric Estime","RB","DEN"],["Tim Patrick","WR","DET"],
+["Kenneth Gainwell","RB","PHI"],["Marvin Mims Jr.","WR","DEN"],
+["Andrei Iosivas","WR","CIN"],["Jalen Coker","WR","CAR"],
+["Ricky White","WR","LV"],["Malachi Corley","WR","NYJ"],
+["Devaughn Vele","WR","DEN"],["Kendrick Bourne","WR","NE"],
+["Parker Washington","WR","JAX"],
+["Justin Tucker","K","BAL"],["Harrison Butker","K","KC"],["Brandon Aubrey","K","DAL"],
+["Jake Moody","K","SF"],["Jason Sanders","K","MIA"],["Tyler Bass","K","BUF"],
+["Chris Boswell","K","PIT"],["Younghoe Koo","K","ATL"],["Cameron Dicker","K","LAC"],
+["Jake Elliott","K","PHI"],["Evan McPherson","K","CIN"],["Dustin Hopkins","K","CLE"],
+["Ka'imi Fairbairn","K","HOU"],["Matt Gay","K","IND"],["Wil Lutz","K","DEN"],
+["Daniel Carlson","K","LV"],
+["San Francisco","DEF","SF"],["Dallas","DEF","DAL"],["Baltimore","DEF","BAL"],
+["Cleveland","DEF","CLE"],["New York","DEF","NYJ"],["Buffalo","DEF","BUF"],
+["Pittsburgh","DEF","PIT"],["Miami","DEF","MIA"],["Philadelphia","DEF","PHI"],
+["Kansas City","DEF","KC"],["New Orleans","DEF","NO"],["Houston","DEF","HOU"],
+["Detroit","DEF","DET"],["Los Angeles","DEF","LAC"],["Indianapolis","DEF","IND"],
+["Green Bay","DEF","GB"]
+  ];
+
+  function buildDefaultPlayers(){
+    var players = SEED.map(function(row, i){
+      return { id:"p"+(i+1), name:row[0], pos:row[1], team:row[2], drafted:false };
+    });
+    var n = players.length;
+    for (var i = n; i < 250; i++){
+      players.push({ id:"p"+(i+1), name:"", pos:"FLEX", team:"", drafted:false });
+    }
+    return players;
+  }
+
+  var state = { players: buildDefaultPlayers() };
+  var nextIdNum = state.players.length + 1;
+  function freshId(){ return "id" + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+  var activeFilter = "ALL";
+  var searchTerm = "";
+  var sortableInstance = null;
+  var db = null;
+  var docRef = null;
+  var suppressSnapshot = 0;
+  var saveTimer = null;
+  var lastDeleted = null;
+  var toastTimer = null;
+
+  var listEl = document.getElementById("list");
+  var emptyState = document.getElementById("emptyState");
+  var chipsEl = document.getElementById("chips");
+  var searchEl = document.getElementById("search");
+  var progressText = document.getElementById("progressText");
+  var progressRing = document.getElementById("progressRing");
+  var syncDot = document.getElementById("syncDot");
+  var syncText = document.getElementById("syncText");
+  var filterNote = document.getElementById("filterNote");
+  var toastEl = document.getElementById("toast");
+  var toastMsg = document.getElementById("toastMsg");
+  var toastUndo = document.getElementById("toastUndo");
+
+  function localSave(){
+    try{ localStorage.setItem("draftboard_state_v1", JSON.stringify(state)); }catch(e){}
+  }
+  function localLoad(){
+    try{
+      var raw = localStorage.getItem("draftboard_state_v1");
+      if (raw){ var parsed = JSON.parse(raw); if (parsed && Array.isArray(parsed.players)) return parsed; }
+    }catch(e){}
+    return null;
+  }
+
+  function setSyncStatus(kind, label){
+    syncDot.className = "sync-dot " + kind;
+    syncText.textContent = label;
+  }
+
+  function debouncedRemoteSave(){
+    localSave();
+    if (!docRef) return;
+    setSyncStatus("saving","Saving…");
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(function(){
+      suppressSnapshot++;
+      docRef.set({ players: state.players, updatedAt: Date.now() }).then(function(){
+        setSyncStatus("synced","Synced across your devices");
+        setTimeout(function(){ suppressSnapshot = Math.max(0, suppressSnapshot - 1); }, 300);
+      }).catch(function(){
+        suppressSnapshot = Math.max(0, suppressSnapshot - 1);
+        setSyncStatus("offline","Couldn't sync — saved on this device");
+      });
+    }, 500);
+  }
+
+  function initDb(){
+    if (!window.claude || !window.claude.use){
+      setSyncStatus("offline","Local only on this device");
+      return;
+    }
+    window.claude.use("db").then(function(ns){
+      if (!ns){ setSyncStatus("offline","Local only on this device"); return; }
+      db = ns;
+      docRef = db.doc("board/state");
+      docRef.get().then(function(snap){
+        if (snap.exists && snap.data() && Array.isArray(snap.data().players) && snap.data().players.length){
+          state.players = snap.data().players;
+        } else {
+          docRef.set({ players: state.players, updatedAt: Date.now() });
+        }
+        setSyncStatus("synced","Synced across your devices");
+        renderAll();
+        attachSortable();
+      }).catch(function(){
+        setSyncStatus("offline","Couldn't reach sync — saved on this device");
+      });
+      docRef.onSnapshot(function(snap){
+        if (suppressSnapshot > 0) return;
+        if (snap.metadata.hasPendingWrites) return;
+        if (!snap.exists) return;
+        var data = snap.data();
+        if (!data || !Array.isArray(data.players)) return;
+        state.players = data.players;
+        renderAll();
+      }, function(){
+        setSyncStatus("offline","Sync interrupted — saved on this device");
+      });
+    }).catch(function(){
+      setSyncStatus("offline","Local only on this device");
+    });
+  }
+
+  function posClass(pos){ return (pos||"flex").toLowerCase(); }
+
+  function draftedCount(){
+    var c = 0;
+    for (var i=0;i<state.players.length;i++) if (state.players[i].drafted) c++;
+    return c;
+  }
+
+  function updateProgress(){
+    var total = state.players.length;
+    var c = draftedCount();
+    var pct = total ? Math.round((c/total)*100) : 0;
+    progressText.textContent = c + " / " + total + " drafted";
+    progressRing.style.setProperty("--pct", pct);
+  }
+
+  function matches(p){
+    if (activeFilter !== "ALL" && p.pos !== activeFilter) return false;
+    if (searchTerm){
+      var t = searchTerm.toLowerCase();
+      var hay = (p.name + " " + p.team).toLowerCase();
+      if (hay.indexOf(t) === -1) return false;
+    }
+    return true;
+  }
+
+  function filteringActive(){ return activeFilter !== "ALL" || !!searchTerm; }
+
+  function renderChips(){
+    chipsEl.innerHTML = "";
+    var all = ["ALL"].concat(POSITIONS);
+    all.forEach(function(p){
+      var b = document.createElement("button");
+      b.className = "chip" + (activeFilter === p ? " active" : "");
+      b.textContent = p;
+      b.addEventListener("click", function(){
+        activeFilter = p;
+        renderChips();
+        renderList();
+      });
+      chipsEl.appendChild(b);
+    });
+  }
+
+  function makeCheckIcon(){
+    var svgNS = "http://www.w3.org/2000/svg";
+    var svg = document.createElementNS(svgNS,"svg");
+    svg.setAttribute("viewBox","0 0 24 24"); svg.setAttribute("fill","none");
+    svg.setAttribute("stroke","currentColor"); svg.setAttribute("stroke-width","3");
+    svg.setAttribute("stroke-linecap","round"); svg.setAttribute("stroke-linejoin","round");
+    var path = document.createElementNS(svgNS,"path"); path.setAttribute("d","M20 6L9 17l-5-5");
+    svg.appendChild(path);
+    return svg;
+  }
+
+  function buildRow(p){
+    var li = document.createElement("li");
+    li.className = "row" + (p.drafted ? " drafted" : "") + (filteringActive() ? " drag-disabled" : "");
+    li.dataset.id = p.id;
+
+    var handle = document.createElement("div");
+    handle.className = "handle";
+    handle.innerHTML = '<svg viewBox="0 0 8 20" fill="currentColor"><circle cx="2" cy="2" r="1.6"/><circle cx="6" cy="2" r="1.6"/><circle cx="2" cy="10" r="1.6"/><circle cx="6" cy="10" r="1.6"/><circle cx="2" cy="18" r="1.6"/><circle cx="6" cy="18" r="1.6"/></svg>';
+    li.appendChild(handle);
+
+    var rank = document.createElement("div");
+    rank.className = "rank";
+    rank.textContent = state.players.indexOf(p) + 1;
+    li.appendChild(rank);
+
+    var sel = document.createElement("select");
+    sel.className = "pos-pill " + posClass(p.pos);
+    POSITIONS.forEach(function(pos){
+      var opt = document.createElement("option");
+      opt.value = pos; opt.textContent = pos;
+      if (pos === p.pos) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener("change", function(){
+      p.pos = sel.value;
+      sel.className = "pos-pill " + posClass(p.pos);
+      debouncedRemoteSave();
+      if (filteringActive()) renderList();
+    });
+    li.appendChild(sel);
+
+    var info = document.createElement("div");
+    info.className = "info";
+
+    var name = document.createElement("div");
+    name.className = "p-name";
+    name.contentEditable = "true";
+    name.spellcheck = false;
+    name.textContent = p.name;
+    name.addEventListener("blur", function(){
+      p.name = name.textContent.trim();
+      debouncedRemoteSave();
+    });
+    name.addEventListener("keydown", function(e){
+      if (e.key === "Enter"){ e.preventDefault(); name.blur(); }
+    });
+    info.appendChild(name);
+
+    var team = document.createElement("div");
+    team.className = "p-team";
+    team.contentEditable = "true";
+    team.spellcheck = false;
+    team.textContent = p.team;
+    team.addEventListener("blur", function(){
+      p.team = team.textContent.trim().toUpperCase();
+      team.textContent = p.team;
+      debouncedRemoteSave();
+    });
+    team.addEventListener("keydown", function(e){
+      if (e.key === "Enter"){ e.preventDefault(); team.blur(); }
+    });
+    info.appendChild(team);
+
+    li.appendChild(info);
+
+    var check = document.createElement("button");
+    check.className = "check-btn" + (p.drafted ? " on" : "");
+    check.setAttribute("aria-label", p.drafted ? "Mark undrafted" : "Mark drafted");
+    check.appendChild(makeCheckIcon());
+    check.addEventListener("click", function(){
+      p.drafted = !p.drafted;
+      li.classList.toggle("drafted", p.drafted);
+      check.classList.toggle("on", p.drafted);
+      check.setAttribute("aria-label", p.drafted ? "Mark undrafted" : "Mark drafted");
+      updateProgress();
+      debouncedRemoteSave();
+    });
+    li.appendChild(check);
+
+    var del = document.createElement("button");
+    del.className = "del-btn";
+    del.setAttribute("aria-label","Remove player");
+    del.textContent = "✕";
+    del.addEventListener("click", function(){
+      removePlayer(p.id);
+    });
+    li.appendChild(del);
+
+    return li;
+  }
+
+  function renderList(){
+    listEl.innerHTML = "";
+    var visible = state.players.filter(matches);
+    emptyState.style.display = visible.length ? "none" : "block";
+    filterNote.classList.toggle("show", filteringActive() && visible.length > 0);
+    visible.forEach(function(p){ listEl.appendChild(buildRow(p)); });
+    toggleSortable();
+  }
+
+  function renderAll(){
+    renderChips();
+    renderList();
+    updateProgress();
+  }
+
+  function toggleSortable(){
+    if (sortableInstance){
+      sortableInstance.option("disabled", filteringActive());
+    }
+  }
+
+  function attachSortable(){
+    if (sortableInstance || typeof Sortable === "undefined") return;
+    sortableInstance = Sortable.create(listEl, {
+      handle: ".handle",
+      animation: 150,
+      disabled: filteringActive(),
+      onEnd: function(){
+        var ids = Array.prototype.map.call(listEl.children, function(li){ return li.dataset.id; });
+        var byId = {};
+        state.players.forEach(function(p){ byId[p.id] = p; });
+        state.players = ids.map(function(id){ return byId[id]; });
+        renderList();
+        debouncedRemoteSave();
+      }
+    });
+  }
+
+  function removePlayer(id){
+    var idx = state.players.findIndex(function(p){ return p.id === id; });
+    if (idx === -1) return;
+    lastDeleted = { item: state.players[idx], index: idx };
+    state.players.splice(idx, 1);
+    renderList();
+    updateProgress();
+    debouncedRemoteSave();
+    showToast(lastDeleted.item.name ? ('Removed "' + lastDeleted.item.name + '"') : "Removed player", function(){
+      if (lastDeleted){
+        state.players.splice(Math.min(lastDeleted.index, state.players.length), 0, lastDeleted.item);
+        renderList();
+        updateProgress();
+        debouncedRemoteSave();
+        lastDeleted = null;
+      }
+    });
+  }
+
+  function showToast(message, onUndo){
+    toastMsg.textContent = message;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastUndo.onclick = function(){
+      toastEl.classList.remove("show");
+      onUndo && onUndo();
+    };
+    toastTimer = setTimeout(function(){ toastEl.classList.remove("show"); }, 5000);
+  }
+
+  document.getElementById("addBtn").addEventListener("click", function(){
+    var p = { id: freshId(), name:"", pos:"FLEX", team:"", drafted:false };
+    state.players.push(p);
+    activeFilter = "ALL";
+    searchEl.value = "";
+    searchTerm = "";
+    renderChips();
+    renderList();
+    updateProgress();
+    debouncedRemoteSave();
+    requestAnimationFrame(function(){
+      var row = listEl.querySelector('[data-id="'+p.id+'"] .p-name');
+      if (row){ row.scrollIntoView({behavior:"smooth", block:"center"}); row.focus(); }
+    });
+  });
+
+  document.getElementById("clearChecksBtn").addEventListener("click", function(){
+    if (!confirm("Uncheck every drafted player? Your board order and names stay the same.")) return;
+    state.players.forEach(function(p){ p.drafted = false; });
+    renderList();
+    updateProgress();
+    debouncedRemoteSave();
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", function(){
+    if (!confirm("Reset the board? This restores the original top-250 order and clears every edit and check.")) return;
+    state.players = buildDefaultPlayers();
+    activeFilter = "ALL";
+    searchEl.value = "";
+    searchTerm = "";
+    renderChips();
+    renderList();
+    updateProgress();
+    debouncedRemoteSave();
+  });
+
+  searchEl.addEventListener("input", function(){
+    searchTerm = searchEl.value.trim();
+    renderList();
+  });
+
+  var cached = localLoad();
+  if (cached) state.players = cached.players;
+  renderAll();
+  attachSortable();
+  initDb();
+})();
+</script>
