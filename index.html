@@ -478,7 +478,7 @@
   var sortableInstance = null;
   var db = null;
   var docRef = null;
-  var suppressSnapshot = 0;
+  var pendingLocalWrite = false;
   var saveTimer = null;
   var lastDeleted = null;
   var toastTimer = null;
@@ -514,16 +514,16 @@
 
   function debouncedRemoteSave(){
     localSave();
+    pendingLocalWrite = true;
     if (!docRef) return;
     setSyncStatus("saving","Saving…");
     clearTimeout(saveTimer);
     saveTimer = setTimeout(function(){
-      suppressSnapshot++;
       docRef.set({ players: state.players, updatedAt: Date.now() }).then(function(){
+        pendingLocalWrite = false;
         setSyncStatus("synced","Synced across your devices");
-        setTimeout(function(){ suppressSnapshot = Math.max(0, suppressSnapshot - 1); }, 300);
       }).catch(function(){
-        suppressSnapshot = Math.max(0, suppressSnapshot - 1);
+        pendingLocalWrite = false;
         setSyncStatus("offline","Couldn't sync — saved on this device");
       });
     }, 500);
@@ -551,7 +551,7 @@
         setSyncStatus("offline","Couldn't reach sync — saved on this device");
       });
       docRef.onSnapshot(function(snap){
-        if (suppressSnapshot > 0) return;
+        if (pendingLocalWrite) return;
         if (snap.metadata.hasPendingWrites) return;
         if (!snap.exists) return;
         var data = snap.data();
