@@ -344,19 +344,19 @@
 
 <div class="bottom-bar">
   <div class="bottom-bar-inner">
-    <button class="btn primary" id="addBtn">
+    <button class="btn primary" id="addBtn" type="button">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
       Add player
     </button>
-    <button class="btn" id="importToggleBtn">Paste a list</button>
-    <button class="btn" id="clearChecksBtn">Clear all checks</button>
-    <button class="btn ghost" id="resetBtn">Reset board</button>
+    <button class="btn" id="importToggleBtn" type="button">Paste a list</button>
+    <button class="btn" id="clearChecksBtn" type="button">Clear all checks</button>
+    <button class="btn ghost" id="resetBtn" type="button">Reset board</button>
   </div>
 </div>
 
 <div class="toast" id="toast">
   <span id="toastMsg"></span>
-  <button id="toastUndo">Undo</button>
+  <button id="toastUndo" type="button">Undo</button>
 </div>
 
 <script>
@@ -562,17 +562,6 @@
       }).catch(function(){
         setSyncStatus("offline","Couldn't reach sync — saved on this device");
       });
-      docRef.onSnapshot(function(snap){
-        if (pendingLocalWrite) return;
-        if (snap.metadata.hasPendingWrites) return;
-        if (!snap.exists) return;
-        var data = snap.data();
-        if (!data || !Array.isArray(data.players)) return;
-        state.players = data.players;
-        renderAll();
-      }, function(){
-        setSyncStatus("offline","Sync interrupted — saved on this device");
-      });
     }).catch(function(){
       setSyncStatus("offline","Local only on this device");
     });
@@ -699,6 +688,7 @@
     li.appendChild(info);
 
     var check = document.createElement("button");
+    check.type = "button";
     check.className = "check-btn" + (p.drafted ? " on" : "");
     check.setAttribute("aria-label", p.drafted ? "Mark undrafted" : "Mark drafted");
     check.appendChild(makeCheckIcon());
@@ -713,6 +703,7 @@
     li.appendChild(check);
 
     var del = document.createElement("button");
+    del.type = "button";
     del.className = "del-btn";
     del.setAttribute("aria-label","Remove player");
     del.textContent = "✕";
