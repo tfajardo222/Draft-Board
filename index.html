@@ -539,13 +539,25 @@
       db = ns;
       docRef = db.doc("board/state");
       docRef.get().then(function(snap){
-        if (snap.exists && snap.data() && Array.isArray(snap.data().players) && snap.data().players.length){
+        if (pendingLocalWrite){
+          // the viewer already changed something before sync was ready — push
+          // that edit instead of overwriting it with the (older) server copy.
+          docRef.set({ players: state.players, updatedAt: Date.now() }).then(function(){
+            pendingLocalWrite = false;
+            setSyncStatus("synced","Synced across your devices");
+          }).catch(function(){
+            pendingLocalWrite = false;
+            setSyncStatus("offline","Couldn't sync — saved on this device");
+          });
+        } else if (snap.exists && snap.data() && Array.isArray(snap.data().players) && snap.data().players.length){
           state.players = snap.data().players;
+          setSyncStatus("synced","Synced across your devices");
+          renderAll();
         } else {
           docRef.set({ players: state.players, updatedAt: Date.now() });
+          setSyncStatus("synced","Synced across your devices");
+          renderAll();
         }
-        setSyncStatus("synced","Synced across your devices");
-        renderAll();
         attachSortable();
       }).catch(function(){
         setSyncStatus("offline","Couldn't reach sync — saved on this device");
