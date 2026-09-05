@@ -221,14 +221,10 @@
   .p-team:focus{background:var(--surface-2);}
   .p-team:empty::before{content:"team"; opacity:.6;}
 
-  .check-btn{
-    flex:none; width:30px; height:30px; border-radius:50%; border:2px solid var(--border);
-    background:var(--surface); cursor:pointer; display:flex; align-items:center; justify-content:center;
-    padding:0;
+  .check-input{
+    flex:none; width:28px; height:28px; margin:0;
+    accent-color:var(--turf); cursor:pointer;
   }
-  .check-btn svg{width:15px; height:15px; opacity:0; stroke:var(--turf-ink);}
-  .check-btn.on{background:var(--turf); border-color:var(--turf);}
-  .check-btn.on svg{opacity:1;}
 
   .del-btn{
     flex:none; width:26px; height:26px; border-radius:50%; border:none; background:transparent;
@@ -611,17 +607,6 @@
     });
   }
 
-  function makeCheckIcon(){
-    var svgNS = "http://www.w3.org/2000/svg";
-    var svg = document.createElementNS(svgNS,"svg");
-    svg.setAttribute("viewBox","0 0 24 24"); svg.setAttribute("fill","none");
-    svg.setAttribute("stroke","currentColor"); svg.setAttribute("stroke-width","3");
-    svg.setAttribute("stroke-linecap","round"); svg.setAttribute("stroke-linejoin","round");
-    var path = document.createElementNS(svgNS,"path"); path.setAttribute("d","M20 6L9 17l-5-5");
-    svg.appendChild(path);
-    return svg;
-  }
-
   function buildRow(p){
     var li = document.createElement("li");
     li.className = "row" + (p.drafted ? " drafted" : "") + (filteringActive() ? " drag-disabled" : "");
@@ -687,16 +672,14 @@
 
     li.appendChild(info);
 
-    var check = document.createElement("button");
-    check.type = "button";
-    check.className = "check-btn" + (p.drafted ? " on" : "");
-    check.setAttribute("aria-label", p.drafted ? "Mark undrafted" : "Mark drafted");
-    check.appendChild(makeCheckIcon());
-    check.addEventListener("click", function(){
-      p.drafted = !p.drafted;
+    var check = document.createElement("input");
+    check.type = "checkbox";
+    check.className = "check-input";
+    check.checked = !!p.drafted;
+    check.setAttribute("aria-label", "Mark drafted");
+    check.addEventListener("change", function(){
+      p.drafted = check.checked;
       li.classList.toggle("drafted", p.drafted);
-      check.classList.toggle("on", p.drafted);
-      check.setAttribute("aria-label", p.drafted ? "Mark undrafted" : "Mark drafted");
       updateProgress();
       debouncedRemoteSave();
     });
