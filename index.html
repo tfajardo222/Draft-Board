@@ -21,6 +21,9 @@
     --drafted-bg:#e9d3cf;
     --drafted-border:#c98a7d;
     --drafted-ink:#7c5850;
+    --gold-bg:#f7ecc9;
+    --gold-border:#d9a441;
+    --gold-ink:#7a5b12;
     --chip-bg:#ffffff;
     --shadow: 0 1px 2px rgba(20,30,20,.06), 0 1px 1px rgba(20,30,20,.04);
 
@@ -49,6 +52,9 @@
       --drafted-bg:#3a2220;
       --drafted-border:#6b3a34;
       --drafted-ink:#a98d87;
+      --gold-bg:#3a2f12;
+      --gold-border:#a97f2c;
+      --gold-ink:#d9b96b;
       --chip-bg:#182518;
       --shadow: 0 1px 2px rgba(0,0,0,.4), 0 2px 8px rgba(0,0,0,.3);
 
@@ -77,6 +83,9 @@
     --drafted-bg:#3a2220;
     --drafted-border:#6b3a34;
     --drafted-ink:#a98d87;
+    --gold-bg:#3a2f12;
+    --gold-border:#a97f2c;
+    --gold-ink:#d9b96b;
     --chip-bg:#182518;
     --shadow: 0 1px 2px rgba(0,0,0,.4), 0 2px 8px rgba(0,0,0,.3);
 
@@ -229,12 +238,20 @@
   }
   .p-name:focus{background:var(--surface-2); text-overflow:clip; white-space:normal;}
   .p-name:empty::before{content:"Tap to name this player"; color:var(--ink-dim); font-weight:500; font-style:italic;}
+  .meta-row{display:flex; align-items:baseline; gap:5px;}
   .p-team{
     font-size:11.5px; color:var(--ink-dim); font-weight:600; text-transform:uppercase; letter-spacing:.03em;
     outline:none; border-radius:4px; padding:1px 3px; margin:0 -3px; width:fit-content;
   }
   .p-team:focus{background:var(--surface-2);}
   .p-team:empty::before{content:"team"; opacity:.6;}
+  .meta-sep{font-size:11px; color:var(--ink-dim); opacity:.6;}
+  .p-bye{
+    font-size:11.5px; color:var(--ink-dim); font-weight:600;
+    outline:none; border-radius:4px; padding:1px 3px; margin:0 -3px; width:fit-content; min-width:6px;
+  }
+  .p-bye:focus{background:var(--surface-2);}
+  .p-bye:empty::before{content:"bye"; opacity:.6; text-transform:uppercase; font-size:10.5px;}
 
   .check-input{
     flex:none; width:28px; height:28px; margin:0;
@@ -247,6 +264,47 @@
     font-size:16px; line-height:1;
   }
   .del-btn:hover{background:var(--surface-2); color:var(--danger);}
+
+  .draft-btn{
+    flex:none; width:28px; height:28px; border-radius:50%; border:1.5px solid var(--gold-border);
+    background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    padding:0; color:var(--gold-border);
+  }
+  .draft-btn svg{width:15px; height:15px;}
+  .draft-btn:hover{background:var(--gold-bg);}
+
+  .team-panel{
+    background:var(--surface); border:1px solid var(--border); border-radius:12px;
+    padding:12px 14px; margin-bottom:14px; box-shadow:var(--shadow);
+  }
+  .team-panel-header{
+    display:flex; align-items:baseline; justify-content:space-between; margin-bottom:8px;
+  }
+  .team-panel-header h2{
+    font-family:"Teko",sans-serif; font-size:20px; font-weight:600; margin:0;
+    text-transform:uppercase; letter-spacing:.02em; color:var(--gold-ink);
+  }
+  .team-panel-header span{font-size:12px; color:var(--ink-dim); font-weight:600;}
+  .team-empty{font-size:12.5px; color:var(--ink-dim); padding:2px 0;}
+  #teamList{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px;}
+  .team-row{
+    display:flex; align-items:center; gap:8px;
+    background:var(--gold-bg); border:1px solid var(--gold-border); border-radius:10px;
+    padding:7px 9px;
+  }
+  .team-row .pos-pill{cursor:default;}
+  .team-row .team-info{flex:1; min-width:0; display:flex; flex-direction:column; gap:1px;}
+  .team-row .team-name{
+    font-size:14px; font-weight:600; color:var(--gold-ink);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .team-row .team-meta{font-size:11px; color:var(--gold-ink); opacity:.8; text-transform:uppercase; letter-spacing:.03em;}
+  .return-btn{
+    flex:none; width:24px; height:24px; border-radius:50%; border:none; background:transparent;
+    color:var(--gold-ink); cursor:pointer; display:flex; align-items:center; justify-content:center;
+    font-size:14px; line-height:1; opacity:.75;
+  }
+  .return-btn:hover{opacity:1; background:rgba(0,0,0,.08);}
 
   .empty-state{
     text-align:center; padding:40px 20px; color:var(--ink-dim); font-size:14px;
@@ -336,10 +394,18 @@
 </div>
 
 <main>
+  <div class="team-panel">
+    <div class="team-panel-header">
+      <h2>My Team</h2>
+      <span id="teamCount">0 players</span>
+    </div>
+    <div class="team-empty" id="teamEmpty">Tap the star on a player to draft them to your team — they'll show up here.</div>
+    <ul id="teamList"></ul>
+  </div>
   <div class="import-panel" id="importPanel" style="display:none;">
     <h2>Paste a list</h2>
-    <p>Grab a current ranking from any site — one player per line, in order. Handles formats like "1. Ja'Marr Chase, CIN – WR1". Position and team are best-effort; fix anything wrong right on the board after importing.</p>
-    <textarea id="importText" placeholder="1. Ja'Marr Chase, CIN - WR1&#10;2. Bijan Robinson, ATL - RB1&#10;3. ..."></textarea>
+    <p>Grab a current ranking from any site — one player per line, in order. Handles formats like "1. Ja'Marr Chase, CIN, Bye 10 - WR1". Stray symbols get cleaned out automatically; position, team and bye week are best-effort, so fix anything wrong right on the board after importing.</p>
+    <textarea id="importText" placeholder="1. Ja'Marr Chase, CIN, Bye 10 - WR1&#10;2. Bijan Robinson, ATL, Bye 5 - RB1&#10;3. ..."></textarea>
     <label class="import-check">
       <input type="checkbox" id="replaceBoardCheckbox">
       <span>Replace the whole board instead of adding to the bottom — checked-off players keep their check if the name matches.</span>
@@ -380,7 +446,7 @@
     return [];
   }
 
-  var state = { players: buildDefaultPlayers() };
+  var state = { players: buildDefaultPlayers(), myTeam: [] };
   var nextIdNum = state.players.length + 1;
   function freshId(){ return "id" + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
 
@@ -396,6 +462,9 @@
 
   var listEl = document.getElementById("list");
   var emptyState = document.getElementById("emptyState");
+  var teamListEl = document.getElementById("teamList");
+  var teamCountEl = document.getElementById("teamCount");
+  var teamEmptyEl = document.getElementById("teamEmpty");
   var chipsEl = document.getElementById("chips");
   var searchEl = document.getElementById("search");
   var progressText = document.getElementById("progressText");
@@ -413,7 +482,13 @@
   function localLoad(){
     try{
       var raw = localStorage.getItem("draftboard_state_v1");
-      if (raw){ var parsed = JSON.parse(raw); if (parsed && Array.isArray(parsed.players)) return parsed; }
+      if (raw){
+        var parsed = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed.players)){
+          if (!Array.isArray(parsed.myTeam)) parsed.myTeam = [];
+          return parsed;
+        }
+      }
     }catch(e){}
     return null;
   }
@@ -430,7 +505,7 @@
     setSyncStatus("saving","Saving…");
     clearTimeout(saveTimer);
     saveTimer = setTimeout(function(){
-      docRef.set({ players: state.players, updatedAt: Date.now() }).then(function(){
+      docRef.set({ players: state.players, myTeam: state.myTeam, updatedAt: Date.now() }).then(function(){
         pendingLocalWrite = false;
         setSyncStatus("synced","Synced across your devices");
       }).catch(function(){
@@ -453,7 +528,7 @@
         if (pendingLocalWrite){
           // the viewer already changed something before sync was ready — push
           // that edit instead of overwriting it with the (older) server copy.
-          docRef.set({ players: state.players, updatedAt: Date.now() }).then(function(){
+          docRef.set({ players: state.players, myTeam: state.myTeam, updatedAt: Date.now() }).then(function(){
             pendingLocalWrite = false;
             setSyncStatus("synced","Synced across your devices");
           }).catch(function(){
@@ -462,10 +537,11 @@
           });
         } else if (snap.exists && snap.data() && Array.isArray(snap.data().players) && snap.data().players.length){
           state.players = snap.data().players;
+          state.myTeam = Array.isArray(snap.data().myTeam) ? snap.data().myTeam : [];
           setSyncStatus("synced","Synced across your devices");
           renderAll();
         } else {
-          docRef.set({ players: state.players, updatedAt: Date.now() });
+          docRef.set({ players: state.players, myTeam: state.myTeam, updatedAt: Date.now() });
           setSyncStatus("synced","Synced across your devices");
           renderAll();
         }
@@ -481,13 +557,13 @@
   function posClass(pos){ return (pos||"flex").toLowerCase(); }
 
   function draftedCount(){
-    var c = 0;
+    var c = state.myTeam.length;
     for (var i=0;i<state.players.length;i++) if (state.players[i].drafted) c++;
     return c;
   }
 
   function updateProgress(){
-    var total = state.players.length;
+    var total = state.players.length + state.myTeam.length;
     var c = draftedCount();
     var pct = total ? Math.round((c/total)*100) : 0;
     progressText.textContent = c + " / " + total + " drafted";
@@ -570,22 +646,58 @@
     });
     info.appendChild(name);
 
+    var metaRow = document.createElement("div");
+    metaRow.className = "meta-row";
+
     var team = document.createElement("div");
     team.className = "p-team";
     team.contentEditable = "true";
     team.spellcheck = false;
     team.textContent = p.team;
     team.addEventListener("blur", function(){
-      p.team = team.textContent.trim().toUpperCase();
+      p.team = team.textContent.trim().toUpperCase().replace(/[^A-Z]/g, "");
       team.textContent = p.team;
       debouncedRemoteSave();
     });
     team.addEventListener("keydown", function(e){
       if (e.key === "Enter"){ e.preventDefault(); team.blur(); }
     });
-    info.appendChild(team);
+    metaRow.appendChild(team);
+
+    var sep = document.createElement("span");
+    sep.className = "meta-sep";
+    sep.textContent = "·";
+    metaRow.appendChild(sep);
+
+    var bye = document.createElement("div");
+    bye.className = "p-bye";
+    bye.contentEditable = "true";
+    bye.spellcheck = false;
+    bye.textContent = p.bye || "";
+    bye.addEventListener("blur", function(){
+      p.bye = bye.textContent.replace(/[^0-9]/g, "").slice(0, 2);
+      bye.textContent = p.bye;
+      debouncedRemoteSave();
+    });
+    bye.addEventListener("keydown", function(e){
+      if (e.key === "Enter"){ e.preventDefault(); bye.blur(); }
+    });
+    metaRow.appendChild(bye);
+
+    info.appendChild(metaRow);
 
     li.appendChild(info);
+
+    var draftBtn = document.createElement("button");
+    draftBtn.type = "button";
+    draftBtn.className = "draft-btn";
+    draftBtn.setAttribute("aria-label", "Draft to my team");
+    draftBtn.title = "Draft to my team";
+    draftBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.8-6.3 3.8 1.7-7L2 9.2l7.1-.6z"/></svg>';
+    draftBtn.addEventListener("click", function(){
+      draftToTeam(p.id);
+    });
+    li.appendChild(draftBtn);
 
     var check = document.createElement("input");
     check.type = "checkbox";
@@ -632,6 +744,7 @@
   function renderAll(){
     renderChips();
     renderList();
+    renderTeamList();
     updateProgress();
     if (!state.players.length && importPanel && importPanel.style.display === "none"){
       importPanel.style.display = "block";
@@ -660,6 +773,81 @@
         debouncedRemoteSave();
       }
     });
+  }
+
+  function buildTeamRow(p){
+    var li = document.createElement("li");
+    li.className = "team-row";
+    li.dataset.id = p.id;
+
+    var pill = document.createElement("span");
+    pill.className = "pos-pill " + posClass(p.pos);
+    pill.textContent = p.pos;
+    li.appendChild(pill);
+
+    var info = document.createElement("div");
+    info.className = "team-info";
+
+    var name = document.createElement("div");
+    name.className = "team-name";
+    name.textContent = p.name || "(unnamed player)";
+    info.appendChild(name);
+
+    var meta = document.createElement("div");
+    meta.className = "team-meta";
+    meta.textContent = [p.team, p.bye ? ("Bye " + p.bye) : ""].filter(Boolean).join(" · ");
+    info.appendChild(meta);
+
+    li.appendChild(info);
+
+    var back = document.createElement("button");
+    back.type = "button";
+    back.className = "return-btn";
+    back.setAttribute("aria-label", "Return to board");
+    back.title = "Return to board";
+    back.textContent = "↩";
+    back.addEventListener("click", function(){
+      returnToBoard(p.id);
+    });
+    li.appendChild(back);
+
+    return li;
+  }
+
+  function renderTeamList(){
+    teamListEl.innerHTML = "";
+    teamCountEl.textContent = state.myTeam.length + (state.myTeam.length === 1 ? " player" : " players");
+    teamEmptyEl.style.display = state.myTeam.length ? "none" : "block";
+    state.myTeam.forEach(function(p){ teamListEl.appendChild(buildTeamRow(p)); });
+  }
+
+  function draftToTeam(id){
+    var idx = state.players.findIndex(function(p){ return p.id === id; });
+    if (idx === -1) return;
+    var player = state.players[idx];
+    state.players.splice(idx, 1);
+    player.drafted = true;
+    player.myTeam = true;
+    state.myTeam.push(player);
+    renderList();
+    renderTeamList();
+    updateProgress();
+    debouncedRemoteSave();
+    showToast((player.name || "Player") + " drafted to your team", null);
+  }
+
+  function returnToBoard(id){
+    var idx = state.myTeam.findIndex(function(p){ return p.id === id; });
+    if (idx === -1) return;
+    var player = state.myTeam[idx];
+    state.myTeam.splice(idx, 1);
+    player.drafted = false;
+    player.myTeam = false;
+    state.players.push(player);
+    renderList();
+    renderTeamList();
+    updateProgress();
+    debouncedRemoteSave();
   }
 
   function removePlayer(id){
@@ -694,7 +882,7 @@
   }
 
   document.getElementById("addBtn").addEventListener("click", function(){
-    var p = { id: freshId(), name:"", pos:"FLEX", team:"", drafted:false };
+    var p = { id: freshId(), name:"", pos:"FLEX", team:"", bye:"", drafted:false, myTeam:false };
     state.players.push(p);
     activeFilter = "ALL";
     searchEl.value = "";
@@ -718,13 +906,15 @@
   });
 
   document.getElementById("resetBtn").addEventListener("click", function(){
-    if (!confirm("Reset the board? This clears every player, edit and check back to a blank board.")) return;
+    if (!confirm("Reset the board? This clears every player, your team, and every edit and check back to a blank board.")) return;
     state.players = buildDefaultPlayers();
+    state.myTeam = [];
     activeFilter = "ALL";
     searchEl.value = "";
     searchTerm = "";
     renderChips();
     renderList();
+    renderTeamList();
     updateProgress();
     debouncedRemoteSave();
   });
@@ -748,6 +938,14 @@
     replaceBoardCheckbox.checked = false;
   });
 
+  function sanitizeName(str){
+    return str
+      .replace(/[‘’]/g, "'")
+      .replace(/[^A-Za-z0-9À-ÖØ-öø-ÿ'.\-\s]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
   function parseImportLine(line){
     var cleaned = line.replace(/^\s*\d+[\.\)]\s*/, "").trim();
     if (!cleaned) return null;
@@ -758,10 +956,18 @@
       cleaned = cleaned.replace(/\[(DRAFTED|TAKEN)\]\s*$/i, "").trim();
     }
 
+    var bye = "";
+    var byeMatch = cleaned.match(/\bbye\b\s*#?\s*(\d{1,2})\b/i);
+    if (byeMatch){
+      bye = byeMatch[1];
+      cleaned = cleaned.replace(byeMatch[0], "").trim();
+    }
+
     var pos = "FLEX";
     var posMatch = cleaned.match(/\b(QB|RB|WR|TE|K|DST|DEF|D\/ST)\s?-?\s?#?\d{0,2}\b/i);
     if (posMatch){
       pos = posMatch[1].toUpperCase().replace("D/ST", "DEF").replace("DST", "DEF");
+      cleaned = cleaned.replace(posMatch[0], "").trim();
     }
 
     var team = "";
@@ -769,17 +975,17 @@
     for (var i = upperTokens.length - 1; i >= 0; i--){
       var t = upperTokens[i];
       if (t === "PPR" || t === "ADP") continue;
-      if (posMatch && t === posMatch[1].toUpperCase()) continue;
       if (POSITIONS.indexOf(t) !== -1) continue;
       team = t;
       break;
     }
 
-    var name = cleaned.split(/,| -- | – |—| - /)[0].trim();
+    var name = cleaned.split(/,| -- | – |—| - /)[0];
     if (!name) name = cleaned;
+    name = sanitizeName(name);
     if (!name) return null;
 
-    return { id: freshId(), name: name, pos: pos, team: team, drafted: drafted };
+    return { id: freshId(), name: name, pos: pos, team: team, bye: bye, drafted: drafted, myTeam: false };
   }
 
   document.getElementById("importConfirmBtn").addEventListener("click", function(){
@@ -814,7 +1020,10 @@
   });
 
   var cached = localLoad();
-  if (cached) state.players = cached.players;
+  if (cached){
+    state.players = cached.players;
+    state.myTeam = cached.myTeam || [];
+  }
   renderAll();
   attachSortable();
   initDb();
